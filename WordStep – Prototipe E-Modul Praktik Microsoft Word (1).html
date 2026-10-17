@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WordStep – Prototipe E-Modul Praktik Microsoft Word</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F5FA; --card:#FFFFFF; --ink:#10223F; --muted:#51607A; --line:#D5DDEA;
+  --word:#2B579A; --word-d:#1E3F73; --play:#E59A0B; --play-bg:#FFF3D6; --ok:#13795B; --ok-bg:#DDF3EA; --bad:#B7351F; --bad-bg:#FBE4DF;
+  --on-word:#FFFFFF;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1727; --card:#16233A; --ink:#E8EEF8; --muted:#A5B3CB; --line:#2B3B57;
+    --word:#7FA6E8; --word-d:#A9C3F2; --play:#F2B13A; --play-bg:#3A2D0E; --ok:#5CD0A8; --ok-bg:#12372B; --bad:#FF9A86; --bad-bg:#3E1D17; --on-word:#0E1727;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1727; --card:#16233A; --ink:#E8EEF8; --muted:#A5B3CB; --line:#2B3B57;
+  --word:#7FA6E8; --word-d:#A9C3F2; --play:#F2B13A; --play-bg:#3A2D0E; --ok:#5CD0A8; --ok-bg:#12372B; --bad:#FF9A86; --bad-bg:#3E1D17; --on-word:#0E1727;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:17px;line-height:1.55}
+h1,h2,h3{font-family:"Bricolage Grotesque","Source Sans 3",system-ui,sans-serif;line-height:1.15;margin:0 0 .5em;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:800}
+h2{font-size:1.5rem;font-weight:700}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:0 0 .9em;max-width:62ch}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--play);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 18px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:14px;min-height:56px;flex-wrap:wrap}
+.brand{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:1.25rem;display:flex;align-items:center;gap:8px;background:none;border:0;padding:0}
+.brand i{display:inline-block;width:12px;height:22px;background:var(--play);border-radius:2px}
+nav{display:flex;gap:4px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch}
+nav button{background:none;border:0;padding:12px 12px;min-height:44px;border-radius:8px;color:var(--muted);font-weight:600;white-space:nowrap}
+nav button[aria-current="page"]{color:var(--word-d);background:var(--paper);box-shadow:inset 0 -3px 0 var(--play)}
+main{padding:24px 0 80px}
+.view{display:none}.view.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.grid2{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:760px){.grid2{grid-template-columns:1fr 1fr}.lay{display:grid;grid-template-columns:280px 1fr;gap:20px}}
+.btn{background:var(--word);color:var(--on-word);border:0;border-radius:10px;padding:12px 18px;min-height:44px;font-weight:700}
+.btn.alt{background:transparent;color:var(--word-d);border:2px solid var(--word)}
+.btn.play{background:var(--play);color:#10223F}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.hero{padding:10px 0 26px}
+.hero p{font-size:1.1rem;color:var(--muted)}
+.bartrack{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.bartrack>span{display:block;height:100%;background:var(--play);width:0;transition:width .3s}
+.small{font-size:.9rem;color:var(--muted)}
+.chip{display:inline-block;padding:2px 8px;border-radius:6px;background:var(--paper);border:1px solid var(--line);font-size:.9rem}
+kbd{font-family:inherit;font-weight:700;background:var(--paper);border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:1px 8px;font-size:.92rem}
+/* timeline strip */
+.strip{display:flex;gap:6px;overflow-x:auto;padding:6px 2px 12px}
+.strip button{flex:0 0 auto;min-width:46px;height:46px;border-radius:8px;border:2px solid var(--line);background:var(--card);font-weight:700;color:var(--muted)}
+.strip button.done{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.strip button.cur{border-color:var(--play);background:var(--play-bg);color:var(--ink);box-shadow:0 3px 0 var(--play)}
+.screen{border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:8px}
+.screen svg{width:100%;height:auto;display:block}
+.tip{background:var(--play-bg);border-left:4px solid var(--play);padding:10px 12px;border-radius:8px;margin-top:12px}
+.opt{display:block;width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:10px;padding:12px 14px;margin:8px 0;min-height:44px}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg)}
+.opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.fb{padding:10px 12px;border-radius:8px;margin-top:10px}
+.fb.ok{background:var(--ok-bg)}.fb.bad{background:var(--bad-bg)}
+.letter{background:#fff;color:#10223F;border:1px solid var(--line);border-radius:8px;padding:12px;font-family:"Times New Roman",Times,serif;font-size:16px}
+.letter button{display:block;width:100%;text-align:left;background:none;border:2px solid transparent;border-radius:6px;padding:4px 6px;font:inherit;color:inherit;min-height:34px}
+.letter button.sel{border-color:var(--play);background:var(--play-bg)}
+.letter button.right{border-color:var(--ok);background:var(--ok-bg)}
+.letter button.wrong{border-color:var(--bad);background:var(--bad-bg)}
+ol.plain{padding-left:1.2em;margin:0}
+.seq{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.seq .it{display:flex;gap:10px;align-items:center}
+.num{flex:0 0 28px;height:28px;border-radius:50%;background:var(--word);color:var(--on-word);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+summary{font-weight:700;cursor:pointer;min-height:32px}
+.proto{font-size:.88rem;color:var(--muted);border-top:1px dashed var(--line);margin-top:30px;padding-top:12px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+  <button class="brand" data-go="beranda" aria-label="WordStep, ke beranda"><i></i>WordStep</button>
+  <nav aria-label="Menu utama">
+    <button data-go="beranda">Beranda</button>
+    <button data-go="modul">Modul</button>
+    <button data-go="latihan">Latihan</button>
+    <button data-go="kuis">Kuis</button>
+    <button data-go="bantuan">Bantuan</button>
+    <button data-go="progres">Progres</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+
+<section id="v-beranda" class="view on">
+  <div class="hero">
+    <h1>Satu langkah, satu layar, satu dokumen jadi.</h1>
+    <p>Panduan praktik Microsoft Word untuk kelas X TAV. Buka di HP sambil mengetik di komputer lab, lalu ulangi kapan saja.</p>
+    <div class="row"><button class="btn play" id="startBtn">Lanjutkan belajar</button><button class="btn alt" data-go="modul">Lihat modul</button></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Modul 1: Membuat surat resmi</h3><p class="small">Menyunting teks mentah menjadi surat: kop, font, Tab, paragraf, tanda tangan.</p><div class="bartrack" aria-hidden="true"><span id="pb1"></span></div><p class="small" id="pt1"></p><button class="btn" data-open="1">Buka modul 1</button></div>
+    <div class="card"><h3>Modul 2: Bagan struktur organisasi</h3><p class="small">Insert &gt; Shapes, konektor, Align dan Distribute untuk bagan 4 tingkatan.</p><div class="bartrack" aria-hidden="true"><span id="pb2"></span></div><p class="small" id="pt2"></p><button class="btn" data-open="2">Buka modul 2</button></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>Hemat kuota</h3><p class="small" style="margin:0">Halaman ini ringan: tanpa video streaming, ilustrasi berupa gambar vektor. Cukup dibuka lewat wifi laboratorium; ukuran halamannya kecil sehingga hemat kuota. Versi akhir akan memakai service worker agar bisa dibuka ulang tanpa internet.</p></div>
+</section>
+
+<section id="v-modul" class="view">
+  <div class="row" style="margin-bottom:10px">
+    <button class="btn" id="tab1">Modul 1: Surat</button><button class="btn alt" id="tab2">Modul 2: Bagan</button>
+  </div>
+  <div class="lay">
+    <div><h2 id="mTitle"></h2><p class="small" id="mCount"></p><div class="strip" id="strip" role="tablist" aria-label="Daftar langkah"></div></div>
+    <div>
+      <div class="card">
+        <h3 id="sTitle"></h3>
+        <div class="screen" id="sShot" role="img" aria-label=""></div>
+        <p id="sText" style="margin-top:12px"></p>
+        <div id="sKeys" class="row" style="margin-bottom:6px"></div>
+        <div class="tip" id="sTip"></div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn alt" id="prev">Sebelumnya</button>
+          <button class="btn" id="done">Tandai selesai</button>
+          <button class="btn play" id="next">Berikutnya</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="v-latihan" class="view">
+  <h2>Latihan</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Urutkan langkah membuat surat</h3>
+      <p class="small">Ketuk langkah sesuai urutan yang benar.</p>
+      <div id="ordPool" class="row"></div>
+      <div class="seq" id="ordSeq" aria-live="polite"></div>
+      <div class="row"><button class="btn" id="ordCheck">Periksa</button><button class="btn alt" id="ordReset">Ulangi</button></div>
+      <div id="ordFb" role="status"></div>
+    </div>
+    <div class="card">
+      <h3>2. Temukan kesalahan format</h3>
+      <p class="small">Ketuk baris yang formatnya keliru, lalu periksa. Ada 3 kesalahan.</p>
+      <div class="letter" id="letter"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="errCheck">Periksa</button><button class="btn alt" id="errReset">Ulangi</button></div>
+      <div id="errFb" role="status"></div>
+    </div>
+  </div>
+</section>
+
+<section id="v-kuis" class="view">
+  <h2>Kuis akhir</h2>
+  <div class="card" id="quiz"></div>
+</section>
+
+<section id="v-bantuan" class="view">
+  <h2>Bantuan</h2>
+  <div class="grid2">
+    <div>
+      <h3>Kendala yang sering muncul</h3>
+      <details><summary>Titik dua pada Nomor dan Hal tidak sejajar</summary><p>Gunakan <kbd>Tab</kbd> setelah kata Nomor, Lampiran, dan Hal. Spasi berulang terlihat sejajar di layar, tetapi bergeser saat teks diubah.</p></details>
+      <details><summary>Konektor lepas saat kotak digeser</summary><p>Tarik ujung konektor sampai titik sambung kotak berwarna hijau, lalu lepas. Konektor yang menempel akan ikut bergerak.</p></details>
+      <details><summary>Ukuran kotak bagan tidak sama</summary><p>Buat satu kotak, lalu gandakan dengan <kbd>Ctrl</kbd>+<kbd>C</kbd> dan <kbd>Ctrl</kbd>+<kbd>V</kbd>. Rapikan dengan Shape Format &gt; Align.</p></details>
+      <details><summary>Komputer saya tidak bisa dipakai</summary><p>Pindah ke komputer yang berfungsi, buka berkas yang sudah disimpan di folder bersama, dan lanjutkan dari langkah terakhir yang kamu tandai selesai.</p></details>
+    </div>
+    <div class="card">
+      <h3>Kartu tutor sebaya</h3>
+      <p class="small">Untuk kamu yang membantu teman. Bantu, jangan mengambil alih.</p>
+      <ol class="plain"><li><strong>Tanya dulu.</strong> Minta teman menjelaskan bagian mana yang macet.</li><li><strong>Tunjukkan caranya.</strong> Sebutkan menu dan pintasannya, bukan langsung mengklik.</li><li><strong>Biarkan teman mencoba.</strong> Mouse tetap di tangan teman.</li></ol>
+    </div>
+  </div>
+</section>
+
+<section id="v-progres" class="view">
+  <h2>Progres belajar</h2>
+  <div class="grid2">
+    <div class="card"><h3>Modul 1</h3><div class="bartrack"><span id="pg1"></span></div><p class="small" id="pgt1"></p></div>
+    <div class="card"><h3>Modul 2</h3><div class="bartrack"><span id="pg2"></span></div><p class="small" id="pgt2"></p></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>Skor kuis terakhir</h3><p id="pgq" style="margin:0"></p></div>
+  <div class="row" style="margin-top:14px"><button class="btn alt" id="resetAll">Hapus progres di perangkat ini</button></div>
+</section>
+
+<p class="proto">Prototipe awal (UTS Teknologi Pembelajaran). Konten dan ilustrasi masih contoh; versi akhir akan dilengkapi 8 langkah penuh per modul, ilustrasi dari Microsoft Word, dan 10 soal kuis. Progres hanya tersimpan di perangkat ini.</p>
+</main>
+
+<script>
+(function(){
+"use strict";
+var KEY="wordstep.v1";
+function load(){try{var r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+var S=load()||{m1:[],m2:[],q:null,mod:1,step:0};
+var M={
+1:{t:"Modul 1: Membuat surat resmi",steps:[
+ {t:"Atur halaman",x:"Buka dokumen kosong. Pilih ukuran kertas A4 dan margin Normal supaya surat muat satu halaman.",k:["Layout","Size","A4"],tip:"Atur halaman dulu, sebelum mengetik. Mengubah ukuran kertas di akhir bisa menggeser seluruh tata letak.",tab:"Layout",hl:[10,28,70,16],lab:"Layout > Size",c:"letter",n:0},
+ {t:"Ketik teks mentah",x:"Ketik teks surat apa adanya tanpa format. Jangan menekan Enter di setiap akhir baris; biarkan Word membungkus baris otomatis.",k:["Enter hanya di akhir paragraf"],tip:"Format diberikan setelah teks selesai. Urutan ini mengurangi pekerjaan ulang.",tab:"Home",hl:[40,70,230,70],lab:"Area ketik",c:"letter",n:0},
+ {t:"Ratakan tengah kop surat",x:"Blok tiga baris kop, lalu ratakan ke tengah. Jadikan nama sekolah tebal ukuran 14.",k:["Ctrl+A bukan; blok 3 baris","Ctrl+E","Ctrl+B"],tip:"Ctrl+E meratakan ke tengah. Ctrl+L kiri, Ctrl+R kanan.",tab:"Home",hl:[96,28,56,16],lab:"Center",c:"letter",n:1},
+ {t:"Beri garis bawah kop",x:"Letakkan kursor di baris terakhir kop. Buka Home > Borders > Bottom Border.",k:["Home","Borders","Bottom Border"],tip:"Garis dibuat dengan Borders, bukan dengan mengetik tanda minus berulang.",tab:"Home",hl:[160,28,60,16],lab:"Borders",c:"letter",n:2},
+ {t:"Samakan font isi surat",x:"Blok seluruh dokumen, lalu pilih Times New Roman ukuran 12.",k:["Ctrl+A","Font","Size 12"],tip:"Satu jenis font untuk seluruh isi membuat surat terlihat resmi.",tab:"Home",hl:[10,28,80,16],lab:"Font",c:"letter",n:3},
+ {t:"Sejajarkan Nomor, Lampiran, Hal",x:"Setelah kata Nomor, Lampiran, dan Hal tekan Tab, lalu ketik titik dua dan isinya.",k:["Tab"],tip:"Tab membuat titik dua selalu sejajar, juga setelah teks diubah.",tab:"Home",hl:[40,62,120,12],lab:"Gunakan Tab",c:"letter",n:3},
+ {t:"Rapikan paragraf isi",x:"Blok paragraf isi. Pilih Justify, first line indent 1,25 cm, dan jarak antarbaris 1,15.",k:["Ctrl+J","Paragraph"],tip:"Justify merapikan tepi kiri dan kanan paragraf.",tab:"Home",hl:[40,84,230,52],lab:"Justify",c:"letter",n:3},
+ {t:"Tanda tangan dan simpan",x:"Geser blok tanda tangan ke kanan, garis bawahi nama, lalu simpan dengan nama Surat_NamaKamu_XTAV.",k:["Ctrl+U","Ctrl+S"],tip:"Cek File > Print agar surat benar-benar satu halaman sebelum dikumpulkan.",tab:"Home",hl:[170,142,100,32],lab:"Blok tanda tangan",c:"letter",n:3}]},
+2:{t:"Modul 2: Bagan struktur organisasi",steps:[
+ {t:"Ubah ke Landscape",x:"Buat dokumen baru. Pilih Layout > Orientation > Landscape agar bagan lebar muat.",k:["Layout","Orientation","Landscape"],tip:"Bagan dengan 4 tingkatan lebih lega di halaman mendatar.",tab:"Layout",hl:[10,28,70,16],lab:"Orientation",c:"org",n:0},
+ {t:"Ketik judul bagan",x:"Ketik judul di bagian atas, ratakan tengah, dan jadikan tebal.",k:["Ctrl+E","Ctrl+B"],tip:"Judul memberi konteks sebelum pembaca melihat kotak-kotak.",tab:"Home",hl:[80,56,150,16],lab:"Judul",c:"org",n:0},
+ {t:"Buka kanvas gambar",x:"Pilih Insert > Shapes > New Drawing Canvas agar semua bentuk tertata dalam satu area.",k:["Insert","Shapes","New Drawing Canvas"],tip:"Kanvas menjaga kotak dan konektor tetap menyatu saat dipindah.",tab:"Insert",hl:[100,28,60,16],lab:"Shapes",c:"org",n:0},
+ {t:"Buat kotak pertama",x:"Pilih Rounded Rectangle, tarik di kanvas, klik dua kali, lalu ketik Wali Kelas.",k:["Rounded Rectangle"],tip:"Buat satu kotak dengan ukuran yang kamu inginkan sebelum digandakan.",tab:"Insert",hl:[110,76,80,22],lab:"Kotak 1",c:"org",n:1},
+ {t:"Gandakan kotak",x:"Pilih kotak, tekan Ctrl+C lalu Ctrl+V sampai ada 8 kotak. Ketik nama jabatan pada tiap kotak.",k:["Ctrl+C","Ctrl+V"],tip:"Menggandakan menjamin ukuran semua kotak sama.",tab:"Home",hl:[40,76,230,70],lab:"8 kotak",c:"org",n:3},
+ {t:"Susun empat tingkatan",x:"Letakkan Wali Kelas di atas, lalu Ketua Kelas, kemudian Wakil, Sekretaris, Bendahara, dan terakhir seksi-seksi.",k:["4 tingkatan"],tip:"Posisi tertinggi di atas; posisi yang dikoordinasi berada di bawahnya.",tab:"Home",hl:[40,60,230,100],lab:"Susunan",c:"org",n:3},
+ {t:"Rapikan dengan Align",x:"Pilih beberapa kotak dengan Shift, lalu Shape Format > Align > Align Middle dan Distribute Horizontally.",k:["Shift","Shape Format","Align"],tip:"Align menyejajarkan, Distribute membagi jarak sama rata.",tab:"Insert",hl:[190,28,60,16],lab:"Align",c:"org",n:3},
+ {t:"Pasang konektor dan simpan",x:"Pilih Elbow Connector, hubungkan dari kotak atas ke bawah sampai menempel, beri warna tiap tingkatan, lalu simpan.",k:["Elbow Connector","Ctrl+S"],tip:"Konektor yang menempel ikut bergerak saat kotak digeser.",tab:"Insert",hl:[40,60,230,100],lab:"Konektor",c:"org",n:4}]}
+};
+var Q=[
+ {q:"Bagian surat yang memuat identitas instansi pengirim disebut ...",o:["Hal","Kop surat","Lampiran","Salam penutup"],a:1,e:"Kop surat memuat nama, alamat, dan kontak instansi di bagian atas."},
+ {q:"Alat apa yang dipakai agar titik dua pada Nomor, Lampiran, dan Hal selalu sejajar?",o:["Spasi berulang","Enter","Tab","Underline"],a:2,e:"Tab membuat posisi tetap sejajar meski teks berubah."},
+ {q:"Perataan yang cocok untuk paragraf isi surat adalah ...",o:["Center","Justify","Right","Distribute"],a:1,e:"Justify meratakan tepi kiri dan kanan paragraf."},
+ {q:"Agar garis penghubung ikut bergerak saat kotak digeser, konektor harus ...",o:["Berwarna merah","Menempel pada titik sambung","Diberi bayangan","Dikunci ke halaman"],a:1,e:"Konektor yang menempel pada titik sambung ikut berpindah bersama bentuk."},
+ {q:"Fitur untuk membagi jarak antarkotak secara sama adalah ...",o:["Distribute","Wrap Text","Crop","Eyedropper"],a:0,e:"Distribute Horizontally/Vertically membagi jarak antarbentuk secara sama."}
+];
+function $(i){return document.getElementById(i)}
+function pct(a){var n=a.filter(Boolean).length;return Math.round(n/8*100)}
+function show(v){
+  var vs=document.querySelectorAll(".view");for(var i=0;i<vs.length;i++)vs[i].classList.remove("on");
+  $("v-"+v).classList.add("on");
+  var bs=document.querySelectorAll("nav button");for(i=0;i<bs.length;i++){if(bs[i].getAttribute("data-go")===v)bs[i].setAttribute("aria-current","page");else bs[i].removeAttribute("aria-current")}
+  window.scrollTo(0,0);
+  if(v==="beranda"||v==="progres")paint();
+  if(v==="modul")renderStep();
+}
+function paint(){
+  [1,2].forEach(function(m){var p=pct(S["m"+m]);
+    $("pb"+m).style.width=p+"%";$("pg"+m).style.width=p+"%";
+    var t=S["m"+m].filter(Boolean).length+" dari 8 langkah selesai";
+    $("pt"+m).textContent=t;$("pgt"+m).textContent=t});
+  $("pgq").textContent=S.q===null?"Belum mengerjakan kuis.":"Skor "+S.q+" dari "+Q.length+".";
+}
+/* ilustrasi layar Word sederhana (SVG buatan sendiri) */
+function shot(st){
+  var tabs=["Home","Insert","Layout"],i,s='<svg viewBox="0 0 320 190" xmlns="http://www.w3.org/2000/svg">';
+  s+='<rect x="0" y="0" width="320" height="190" rx="6" fill="#FFFFFF" stroke="#C9D3E3"/>';
+  s+='<rect x="0" y="0" width="320" height="22" rx="6" fill="#2B579A"/><rect x="0" y="12" width="320" height="10" fill="#2B579A"/>';
+  for(i=0;i<3;i++){var on=tabs[i]===st.tab;
+    s+='<rect x="'+(10+i*50)+'" y="8" width="46" height="14" rx="3" fill="'+(on?'#FFFFFF':'#2B579A')+'"/><text x="'+(33+i*50)+'" y="19" font-size="9" text-anchor="middle" fill="'+(on?'#2B579A':'#FFFFFF')+'" font-family="sans-serif">'+tabs[i]+'</text>'}
+  s+='<rect x="0" y="22" width="320" height="26" fill="#F3F6FB"/>';
+  for(i=0;i<8;i++)s+='<rect x="'+(12+i*36)+'" y="28" width="28" height="14" rx="3" fill="#DDE5F2"/>';
+  s+='<rect x="30" y="54" width="260" height="130" fill="#FFFFFF" stroke="#D5DDEA"/>';
+  if(st.c==="letter"){
+    var L=[["c",110,66,100],["c",95,74,130],["c",100,82,120]];
+    if(st.n>=1){s+='<rect x="95" y="62" width="130" height="6" rx="2" fill="#10223F"/><rect x="85" y="71" width="150" height="4" rx="2" fill="#8392AE"/><rect x="90" y="78" width="140" height="4" rx="2" fill="#8392AE"/>'}
+    else{s+='<rect x="42" y="62" width="130" height="6" rx="2" fill="#10223F"/><rect x="42" y="71" width="150" height="4" rx="2" fill="#8392AE"/><rect x="42" y="78" width="140" height="4" rx="2" fill="#8392AE"/>'}
+    if(st.n>=2)s+='<rect x="42" y="86" width="236" height="2" fill="#10223F"/>';
+    var y=94;for(i=0;i<3;i++){s+='<rect x="42" y="'+y+'" width="'+(st.n>=3?70:90)+'" height="4" rx="2" fill="#8392AE"/>';y+=8}
+    s+='<rect x="'+(st.n>=3?50:42)+'" y="122" width="'+(st.n>=3?228:200)+'" height="4" rx="2" fill="#8392AE"/><rect x="42" y="130" width="'+(st.n>=3?236:190)+'" height="4" rx="2" fill="#8392AE"/><rect x="42" y="138" width="'+(st.n>=3?236:170)+'" height="4" rx="2" fill="#8392AE"/>';
+    s+='<rect x="200" y="152" width="70" height="4" rx="2" fill="#8392AE"/><rect x="210" y="170" width="52" height="4" rx="2" fill="#10223F"/>';
+  }else{
+    s+='<rect x="100" y="58" width="120" height="8" rx="2" fill="#10223F"/>';
+    var n=st.n;
+    if(n>=1)s+='<rect x="130" y="76" width="60" height="16" rx="5" fill="#2B579A"/>';
+    if(n>=2){s+='<rect x="130" y="100" width="60" height="14" rx="5" fill="#4C7BC4"/>';}
+    if(n>=3){for(i=0;i<3;i++)s+='<rect x="'+(60+i*80)+'" y="122" width="56" height="14" rx="5" fill="#6C93D4"/>';for(i=0;i<4;i++)s+='<rect x="'+(48+i*60)+'" y="148" width="48" height="14" rx="5" fill="#9DB6E3"/>'}
+    if(n>=4){s+='<path d="M160 92 V100 M160 114 V118 H88 V122 M160 118 H160 V122 M160 118 H248 V122" stroke="#E59A0B" stroke-width="2" fill="none"/>'}
+  }
+  var h=st.hl;
+  s+='<rect x="'+h[0]+'" y="'+h[1]+'" width="'+h[2]+'" height="'+h[3]+'" rx="4" fill="none" stroke="#E59A0B" stroke-width="3" stroke-dasharray="6 3"/>';
+  s+='<rect x="'+h[0]+'" y="'+(h[1]+h[3]+3)+'" width="'+(st.lab.length*5.4+10)+'" height="14" rx="3" fill="#E59A0B"/><text x="'+(h[0]+5)+'" y="'+(h[1]+h[3]+13)+'" font-size="9" font-weight="700" fill="#10223F" font-family="sans-serif">'+st.lab+'</text>';
+  return s+'</svg>';
+}
+function renderStep(){
+  var m=S.mod,md=M[m],stp=md.steps[S.step];
+  $("tab1").className="btn"+(m===1?"":" alt");$("tab2").className="btn"+(m===2?"":" alt");
+  $("mTitle").textContent=md.t;$("mCount").textContent="Langkah "+(S.step+1)+" dari "+md.steps.length;
+  var st=$("strip");st.innerHTML="";
+  md.steps.forEach(function(x,i){var b=document.createElement("button");b.textContent=i+1;b.setAttribute("aria-label","Langkah "+(i+1)+": "+x.t);
+    b.className=(S["m"+m][i]?"done ":"")+(i===S.step?"cur":"");b.onclick=function(){S.step=i;save();renderStep()};st.appendChild(b)});
+  $("sTitle").textContent=(S.step+1)+". "+stp.t;
+  $("sShot").innerHTML=shot(stp);$("sShot").setAttribute("aria-label","Ilustrasi: "+stp.lab+" ditandai pada tampilan Word");
+  $("sText").textContent=stp.x;
+  var k=$("sKeys");k.innerHTML="";stp.k.forEach(function(t){var e=document.createElement("kbd");e.textContent=t;k.appendChild(e)});
+  $("sTip").textContent="Tips: "+stp.tip;
+  $("prev").disabled=S.step===0;$("next").disabled=S.step===md.steps.length-1;
+  $("done").textContent=S["m"+m][S.step]?"Batalkan tanda selesai":"Tandai selesai";
+}
+/* latihan 1: urutan */
+var ORD=["Ketik teks mentah","Ratakan tengah kop","Beri garis bawah kop","Samakan font isi","Rapikan paragraf isi"];
+var ordPick=[];
+function ordRender(){
+  var pool=$("ordPool");pool.innerHTML="";
+  var idx=[2,0,4,1,3];
+  idx.forEach(function(i){var b=document.createElement("button");b.className="btn alt";b.textContent=ORD[i];b.disabled=ordPick.indexOf(i)>-1;
+    b.onclick=function(){ordPick.push(i);ordRender()};pool.appendChild(b)});
+  var q=$("ordSeq");q.innerHTML="";
+  ordPick.forEach(function(i,n){var d=document.createElement("div");d.className="it";d.innerHTML='<span class="num">'+(n+1)+'</span><span></span>';d.lastChild.textContent=ORD[i];q.appendChild(d)});
+  $("ordFb").innerHTML="";
+}
+$("ordReset").onclick=function(){ordPick=[];ordRender()};
+$("ordCheck").onclick=function(){
+  var f=$("ordFb");
+  if(ordPick.length<ORD.length){f.innerHTML='<div class="fb bad">Pilih kelima langkah dulu.</div>';return}
+  var ok=ordPick.every(function(v,i){return v===i});
+  f.innerHTML=ok?'<div class="fb ok">Urutan benar. Teks diketik dulu, baru diformat dari kop ke isi.</div>':'<div class="fb bad">Belum tepat. Petunjuk: teks mentah selalu diketik lebih dulu, dan kop diformat sebelum isi.</div>';
+};
+/* latihan 2: kesalahan */
+var LET=[
+ {t:"SMK PEMBANGUNAN NASIONAL",bad:true,why:"Kop masih rata kiri; seharusnya Center."},
+ {t:"Nomor      : 012/TAV/X/2026",bad:true,why:"Titik dua disejajarkan dengan spasi berulang; gunakan Tab."},
+ {t:"Lampiran\t: 1 (satu) lembar",bad:false,why:""},
+ {t:"Dengan hormat, sehubungan dengan kegiatan praktik video profil,",bad:false,why:""},
+ {t:"kami mengajukan peminjaman kamera dan tripod untuk",bad:true,why:"Enter ditekan di tengah kalimat; biarkan Word membungkus baris."},
+ {t:"Hormat kami, Ketua Kelas X TAV",bad:false,why:""}
+];
+var errSel={};
+function errRender(){
+  var l=$("letter");l.innerHTML="";
+  LET.forEach(function(x,i){var b=document.createElement("button");b.textContent=x.t.replace("\t","      ");b.setAttribute("aria-pressed",!!errSel[i]);if(errSel[i])b.className="sel";
+    b.onclick=function(){errSel[i]=!errSel[i];errRender()};l.appendChild(b)});
+  $("errFb").innerHTML="";
+}
+$("errReset").onclick=function(){errSel={};errRender()};
+$("errCheck").onclick=function(){
+  var l=$("letter").children,hit=0,miss=0,wrong=0,msgs=[];
+  LET.forEach(function(x,i){var s=!!errSel[i];
+    if(x.bad&&s){hit++;l[i].className="right";msgs.push(x.why)}
+    else if(x.bad&&!s){miss++;l[i].className="wrong"}
+    else if(!x.bad&&s){wrong++;l[i].className="wrong"}});
+  var f=$("errFb");
+  f.innerHTML='<div class="fb '+(hit===3&&!wrong?"ok":"bad")+'">Benar '+hit+' dari 3'+(wrong?"; "+wrong+" baris yang kamu pilih sebenarnya sudah benar":"")+(miss?"; "+miss+" kesalahan belum ditemukan":"")+".</div>";
+  if(msgs.length){var ul=document.createElement("ul");msgs.forEach(function(m){var li=document.createElement("li");li.textContent=m;ul.appendChild(li)});f.appendChild(ul)}
+};
+/* kuis */
+var qi=0,qs=0,qa=false;
+function quizRender(){
+  var box=$("quiz");box.innerHTML="";
+  if(qi>=Q.length){
+    S.q=qs;save();
+    box.innerHTML='<h3>Selesai</h3><p>Skor kamu '+qs+' dari '+Q.length+'.</p><button class="btn" id="qAgain">Ulangi kuis</button>';
+    $("qAgain").onclick=function(){qi=0;qs=0;qa=false;quizRender()};return}
+  var q=Q[qi];
+  var h=document.createElement("p");h.className="small";h.textContent="Soal "+(qi+1)+" dari "+Q.length;box.appendChild(h);
+  var t=document.createElement("h3");t.textContent=q.q;box.appendChild(t);
+  q.o.forEach(function(o,i){var b=document.createElement("button");b.className="opt";b.textContent=o;
+    b.onclick=function(){if(qa)return;qa=true;var ok=i===q.a;if(ok)qs++;
+      var bs=box.querySelectorAll(".opt");bs.forEach(function(x,j){if(j===q.a)x.classList.add("ok");else if(j===i)x.classList.add("bad")});
+      var f=document.createElement("div");f.className="fb "+(ok?"ok":"bad");f.setAttribute("role","status");f.textContent=(ok?"Benar. ":"Belum tepat. ")+q.e;box.appendChild(f);
+      var n=document.createElement("button");n.className="btn";n.style.marginTop="12px";n.textContent=qi===Q.length-1?"Lihat skor":"Soal berikutnya";
+      n.onclick=function(){qi++;qa=false;quizRender()};box.appendChild(n)};
+    box.appendChild(b)});
+}
+/* navigasi */
+document.addEventListener("click",function(e){
+  var g=e.target.closest("[data-go]");if(g){show(g.getAttribute("data-go"));return}
+  var o=e.target.closest("[data-open]");if(o){S.mod=+o.getAttribute("data-open");S.step=0;save();show("modul")}
+});
+$("startBtn").onclick=function(){show("modul")};
+$("tab1").onclick=function(){S.mod=1;S.step=0;save();renderStep()};
+$("tab2").onclick=function(){S.mod=2;S.step=0;save();renderStep()};
+$("prev").onclick=function(){if(S.step>0){S.step--;save();renderStep()}};
+$("next").onclick=function(){if(S.step<M[S.mod].steps.length-1){S.step++;save();renderStep()}};
+$("done").onclick=function(){var a=S["m"+S.mod];a[S.step]=!a[S.step];save();renderStep()};
+$("resetAll").onclick=function(){S={m1:[],m2:[],q:null,mod:1,step:0};save();paint()};
+if(!S.m1)S.m1=[];if(!S.m2)S.m2=[];
+ordRender();errRender();quizRender();show("beranda");
+})();
+</script>
+</body>
+</html>
